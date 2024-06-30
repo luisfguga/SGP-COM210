@@ -1,0 +1,1 @@
+CREATE VIEW `vw_total_produtos_por_categoria` AS SELECT tb_categorias_id, COUNT(id) as total FROM tb_produtos GROUP BY tb_categorias_id

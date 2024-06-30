@@ -1,0 +1,22 @@
+CREATE VIEW `vw_produtos` AS SELECT 
+p.id, 
+p.tb_categorias_id as categoria_id,
+p.titulo,
+p.qtde_atual,
+p.qtde_ideal,
+p.peso,
+p.unidade_medida,
+p.preco_custo,
+p.preco_venda,
+p.observacoes,
+p.descritivo,
+p.data_cadastro,
+p.status,
+(SELECT titulo FROM tb_categorias WHERE id=p.tb_categorias_id) as categoria,
+(SELECT nome_fantasia FROM tb_fornecedores WHERE id=p.tb_fornecedores_id) as fornecedor,
+(SELECT nome FROM tb_usuarios WHERE id=p.tb_usuarios_id) as cadastrante,
+(SELECT (p.preco_venda - p.preco_custo)) as lucro,
+(SELECT IF((p.qtde_atual > p.qtde_ideal),'SUFICIENTE','INSUFICIENTE')) as situacao,
+(SELECT (p.qtde_atual * p.preco_custo)) as custo_estoque,
+(SELECT (p.qtde_atual * (p.preco_venda - p.preco_custo))) as lucro_estoque
+FROM tb_produtos p
