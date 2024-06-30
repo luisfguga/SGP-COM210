@@ -1,0 +1,159 @@
+<?php
+
+use Ajrc\Helper\Sessions;
+
+// SEO : SEARCH ENGINE OPTIMIZATE ----
+$title = "Chokoart - o BUSCADOR mais atraente que você verá e encontrará!";
+$description = $title." Chocolates de vários sabores para os mais refinados gostos!";
+$url_redirect = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
+//----
+
+require_once("../templates/public/header.php");
+require_once("../templates/public/topo.php");
+
+?>
+
+<!-- Main Content -->
+<div class="container mt-3 mb-3">
+      <div class="row gutters-3">
+
+        <!-- Shop Filters -->
+        <div class="col-lg-3 col-md-4">
+          <div class="accordion accordion-caret accordion-sidebar d-none d-md-block">
+            <div class="card">
+              <div class="card-header">
+                <a href="#filter-categories" data-toggle="collapse" aria-expanded="true" aria-controls="filter-categories" role="button" class="h6">
+                  CATEGORIAS
+                </a>
+              </div>
+              <div id="filter-categories" class="collapse show">
+                <div class="card-body">
+                  <ul class="list-tree">
+
+                    <?php
+                      //----| LISTA AS CATEGORIAS NA LATERAL |----
+                      //echo $CATEGORIASMENULATERAL;
+                      //----
+                    ?>
+
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>    
+              
+        </div>
+        <!-- /Shop Filters -->
+
+        <div class="col-lg-9 col-md-8">
+
+          <!-- Shop Toolbar -->
+          <div class="card mb-3">
+            <div class="card-body d-flex justify-content-end align-items-center py-2">
+              <button class="btn btn-sm btn-outline-primary rounded-pill d-block d-md-none mr-auto" data-toggle="modal" data-target="#filterModal"><i data-feather="filter"></i> Categorias</button>
+              <ol class="breadcrumb d-none d-md-flex p-0 mb-0 mr-auto">
+                <li class="breadcrumb-item"><a href="./">Página Principal</a></li>
+                <li class="breadcrumb-item"><a href="#">Busquei por</a></li>
+                <li class="breadcrumb-item active" aria-current="page"><?php echo trim($_POST["termo_buscado"]); ?></li>
+              </ol>
+                <span class="text-muted mr-1">Compartilhe:</span>
+                <a href="https://www.facebook.com/sharer.php?u=<?php echo $url_redirect; ?>" class="btn btn-icon rounded-pill btn-sm btn-outline-primary ml-1" data-toggle="tooltip" target="_blank" title="no Facebook"><i data-feather="facebook"></i></a>
+                <a href="http://twitter.com/intent/tweet?text=<?php echo $title;?>&url=<?php echo $url_redirect; ?>&via=@chokoart.com" class="btn btn-icon rounded-pill btn-sm btn-outline-primary ml-1" data-toggle="tooltip" target="_blank" title="no Twitter"><i data-feather="twitter"></i></i></a>
+            </div>
+          </div>
+          <!-- /Shop Toolbar -->
+
+          <!-- Shop Grid -->
+          <div class="grid grid-gap-3 grid-col-2 grid-col-lg-3 mt-3">
+            <?php 
+                //----| LISTA DOS PRODUTOS RETORNADOS PELO BUSCADOR |------
+                \Ajrc\Model\Buscador::ListAll( $_POST["termo_buscado"] );
+                //----
+            ?>
+          </div>
+          <!-- /Shop Grid -->
+
+         
+
+        </div>
+      </div>
+    </div>
+    <!-- /Main Content -->
+
+    <!-- Filter Modal -->
+    <div class="modal fade" id="filterModal" tabindex="-1" role="dialog" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header border-bottom-0">
+            <h5 class="modal-title">Categorias</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body p-0 pb-3">
+                  <ul class="list-tree">
+
+                    <?php
+                        
+                    ?>
+
+                  </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- /Filter Modal -->
+
+    
+
+
+<!-- Footer -->
+<?php 
+require_once("../templates/public/footer.php"); 
+?>
+<!-- /Footer -->
+
+    <script src="plugins/jquery/jquery.min.js"></script>
+    <script src="plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="plugins/feather-icons/feather.min.js"></script>
+    <script src="plugins/metismenu/metisMenu.min.js"></script>
+    <script src="plugins/perfect-scrollbar/perfect-scrollbar.min.js"></script>
+    <script src="plugins/swiper/swiper.min.js"></script>
+    <script src="plugins/nouislider/nouislider.min.js"></script>
+    <script src="plugins/photoswipe/photoswipe.min.js"></script>
+    <script src="plugins/photoswipe/photoswipe-ui-default.min.js"></script>
+    <script src="plugins/noty/noty.min.js"></script>
+    <script src="dist/js/script.min.js"></script>
+    <script src="js/produto.js"></script>
+    <script>
+    $(function () {
+
+      App.rating()
+      App.atwDemo()
+      App.colorOption()
+      App.rating()
+      App.quickviewDemo()
+
+      var filter = {
+        categories: function () {
+          $('.list-tree').metisMenu()
+        }
+      }
+
+
+     
+
+      <?php
+        if(Sessions::UserID()!="") { 
+            echo "WishList.Persistence('../add-whislist');"; 
+        }
+        ?>
+
+    })
+    </script>
+
+
+
+
+</body>
+</html>

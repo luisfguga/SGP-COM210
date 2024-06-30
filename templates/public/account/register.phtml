@@ -1,0 +1,255 @@
+
+    <?php
+
+    use Ajrc\Helper\Sessions;
+    use Ajrc\Helper\AlertBootstrap4 as Alert;
+    use Ajrc\Model\Usuario;
+    $email = trim($_POST["email"]);
+    $senha = trim($_POST["password"]);
+    
+    $sexo = null;
+    $sexos = [""=>"Selecione", "M"=>"Masculino", "F"=>"Feminino"];
+    foreach($sexos as $key=>$value){
+        $sexo.= "<option value='".$key."'>".$value."</option>";
+    }
+    
+
+    $required = " required ";
+    
+      
+    require_once("../templates/public/header.php");
+    require_once("../templates/public/topo.php");
+
+    ?>
+
+    <!-- Main Content -->
+    <div class="container my-3">
+      <div class="row">
+
+        <div class="col-md-4 col-lg-3">
+          <div class="card">
+            <div class="card-body text-center">
+              <img src="img/nophoto.png" width="80" height="80" alt="Foto de Adair" class="rounded-circle mb-3">
+              <hr>
+              <div class="roboto-condensed bold" data-toggle="tooltip" title="Registrando-se">
+                <i data-feather="award" class="text-warning"></i> Pontos: 0</div>
+            </div>
+            <div class="list-group list-group-flush">
+              <a href="#" class="list-group-item list-group-item-action active"><i data-feather="user" class="mr-3"></i> Registrando-se</a>
+              <a href="#account-orders" class="list-group-item list-group-item-action"><i data-feather="shopping-bag" class="mr-3"></i> Pedidos</a>
+              <a href="#account-wishlist" class="list-group-item has-badge list-group-item-action"><i data-feather="heart" class="mr-3"></i> Lista de Desejos <span class="badge rounded badge-primary">2</span></a>
+              <a href="./account-logout" class="list-group-item list-group-item-action text-danger"><i data-feather="log-out" class="mr-3"></i> Logout</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="col mt-3 mt-md-0">
+          <div class="card">
+            <div class="card-body">
+              <h3>Seus dados</h3><hr>
+              <form class="form form-style-1" data-toggle="validator" data-disable="false" role="form" method="POST" action="./account-insert" enctype="multipart/form-data">
+                <input type="hidden" name="cliente" id="cliente" value="1">
+                <input type="hidden" name="status" id="status" value="A">
+                <div class="container-fluid float-left">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="row">
+                                <div class="col-md-6">
+
+                                    <div class="form-group">
+                                        <label for="nome">Nome</label>
+                                        <div class="input-group">
+                                        <div class="input-group-addon"><i class="fa fa-user"></i></div>
+                                        <input tabindex="1" data-error="Campo de preenchimento obrigatório!" class="form-control" type="text" name="nome" id="nome" <?php echo $required; ?>>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="login">Login</label>
+                                        <div class="input-group">
+                                        <div class="input-group-addon"><i class="fa fa-envelope"></i></div>
+                                        <input tabindex="3"  data-error="Campo de preenchimento obrigatório!" class="form-control" type="text" name="login" id="login"  <?php echo $required; ?>>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="sexo">Sexo</label>
+                                        <div class="input-group">
+                                        <div class="input-group-addon"><i class="fa fa-intersex"></i></div>
+                                        <select tabindex="5"  data-error="Campo de preenchimento obrigatório!" class="form-control selectpicker" name="sexo" id="sexo" <?php echo $required; ?>>
+                                            <?php echo $sexo;?>
+                                        </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="cep">CEP</label>
+                                        <div class="input-group">
+                                        <div class="input-group-addon"><i class="fa fa-address-card"></i></div>
+                                        <input tabindex="7"  data-error="Campo de preenchimento obrigatório!" class="form-control" type="text" name="cep" id="cep" onkeypress="$(this).mask('00.000-000')" <?php echo $required; ?>>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="cidade">Cidade</label>
+                                        <div class="input-group">
+                                        <div class="input-group-addon"><i class="fa fa-address-card"></i></div>
+                                        <input tabindex="9"  data-error="Campo de preenchimento obrigatório!" class="form-control" type="text" name="cidade" id="cidade"  <?php echo $required; ?>>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="endereco">Endereço</label>
+                                        <div class="input-group">
+                                        <div class="input-group-addon"><i class="fa fa-address-card"></i></div>
+                                        <input tabindex="11"  data-error="Campo de preenchimento obrigatório!" class="form-control" type="text" name="endereco" id="endereco"  <?php echo $required; ?>>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="numero">Número</label>
+                                        <div class="input-group">
+                                        <div class="input-group-addon"><i class="fa fa-address-card"></i></div>
+                                        <input tabindex="13"  data-error="Campo de preenchimento obrigatório!" class="form-control" type="text" name="numero" id="numero" <?php echo $required; ?>>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="telefone">Telefone</label>
+                                        <div class="input-group">
+                                        <div class="input-group-addon"><i class="fa fa-phone"></i></div>
+                                        <input tabindex="15"  class="form-control" type="text" name="telefone" id="telefone" onkeypress="$(this).mask('(00) 0000-0000')">
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group" style="margin-top:20px;text-align:center">
+                                        <label>
+                                            <label for="foto"><div class="fa fa-image"></div> Escolha a foto do seu perfil:</label>
+                                            <input tabindex="17"  type="file" class="form-control-file" name="foto" id="foto">
+                                        </label>
+                                    </div>
+
+                                </div>
+                                <div class="col-md-6">
+
+                                    <div class="form-group">
+                                        <label for="email">E-mail</label>
+                                        <div class="input-group">
+                                        <div class="input-group-addon"><i class="fa fa-envelope"></i></div>
+                                        <input tabindex="2"  data-error="Campo de preenchimento obrigatório!" class="form-control" type="email" name="email" id="email" value="<?php echo $email; ?>" <?php echo $required; ?>>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="senha">Senha</label>
+                                        <div class="input-group">
+                                        <div class="input-group-addon"><i class="fa fa-key"></i></div>
+                                        <input tabindex="4"  class="form-control" name="senha" id="senha" type="password" placeholder="Senha" value="<?php echo $senha; ?>">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="data_nascto">Data de Nascimento</label>
+                                        <div class="input-group">
+                                        <div class="input-group-addon"><i class="fa fa-calendar"></i></div>
+                                        <input tabindex="6"  data-error="Campo de preenchimento obrigatório!" class="form-control" name="data_nascto" id="data_nascto" type="date" <?php echo $required; ?>>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="cpf">CPF</label>
+                                        <div class="input-group">
+                                        <div class="input-group-addon"><i class="fa fa-user"></i></div>
+                                        <input tabindex="8"  data-error="Campo de preenchimento obrigatório!" class="form-control" type="text" name="cpf" id="cpf" <?php echo $required; ?>>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="estado">Estado/UF</label>
+                                        <div class="input-group">
+                                        <div class="input-group-addon"><i class="fa fa-address-card"></i></div>
+                                        <input tabindex="10"  data-error="Campo de preenchimento obrigatório!" class="form-control" type="text" name="estado" id="estado" maxlength="2" <?php echo $required; ?>>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="bairro">Bairro</label>
+                                        <div class="input-group">
+                                        <div class="input-group-addon"><i class="fa fa-address-card"></i></div>
+                                        <input tabindex="12"  data-error="Campo de preenchimento obrigatório!" class="form-control" type="text" name="bairro" id="bairro"  <?php echo $required; ?>>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="complemento">Complemento</label>
+                                        <div class="input-group">
+                                        <div class="input-group-addon"><i class="fa fa-address-card"></i></div>
+                                        <input tabindex="14"  class="form-control" type="text" name="complemento" id="complemento">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="celular">Celular</label>
+                                        <div class="input-group">
+                                        <div class="input-group-addon"><i class="fa fa-mobile"></i></div>
+                                        <input tabindex="16"  class="form-control" type="text" name="celular" id="celular" onkeypress="$(this).mask('(00) 00000-0000')">
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group pt-3">
+                                        <button class="btn btn-success btn-block">REGISTRA-ME</button>
+                                    </div>
+
+                                </div>
+                            </div>
+                            
+                        </div>
+                    </div>
+                </div>
+                
+            </form>
+
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <!-- /Main Content -->
+
+
+    <!-- Footer -->
+    <?php 
+    require_once("../templates/public/footer.php"); 
+    ?>
+    <!-- /Footer -->
+    
+
+
+    <!-- REQUIRED JS  -->
+    <script src="/plugins/jquery/jquery.min.js"></script>
+    <script src="/libs/jquery.mask/jquery.mask.min.js"></script>
+    <script src="/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="/plugins/feather-icons/feather.min.js"></script>
+    <script src="/plugins/metismenu/metisMenu.min.js"></script>
+    <script src="/plugins/perfect-scrollbar/perfect-scrollbar.min.js"></script>
+
+    <!-- Mimity JS  -->
+    <script src="/dist/js/script.min.js"></script>
+
+    <script>
+    $(function () {
+
+        $("input#nome").focus();
+
+      // Show reset password form
+      $('.reset').click(function (event) {
+        $('#row-login').attr('hidden', true)
+        $('#row-reset').attr('hidden', false)
+        event.preventDefault()
+      })
+
+      // Show login form
+      $('.login').click(function (event) {
+        $('#row-login').attr('hidden', false)
+        $('#row-reset').attr('hidden', true)
+        $('#row-reset-done').attr('hidden', true)
+      })
+
+      // Show reset password done message (demo purpose only)
+      $('.reset-done').click(function (event) {
+        $('#row-reset-done').attr('hidden', false)
+        $('#row-reset').attr('hidden', true)
+      })
+
+    })
+    </script>
+
+  </body>
+</html>

@@ -1,0 +1,52 @@
+    <?php
+
+      use Ajrc\Helper\Sessions;
+      
+      //----| PERSONALIZA A MENSAGEM DE EXIBÇÃO |----
+      $msg = null;
+      if(array_key_exists("msg",$_GET)){ $msg = trim($_GET["msg"]); }
+      //----
+
+      //----| SEO : SEARCH ENGINE OPTIMIZATE |----
+      $title = "Chokoart :: Oh céus! Página não encontrada!";
+      $description = $title." - 404: Página não encontrada ou não existe mesmo!";
+      $url_redirect = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
+      //----
+      
+      require_once("../templates/public/header.php");
+      require_once("../templates/public/topo.php");
+
+    ?>
+
+    
+    <!-- Main Content -->
+    <div class="container my-4 text-center">
+
+      <img src="img/preloading-problem.gif" class="img-fluid rounded-circle mb-3 img-thumbnail border-info">
+      <h1><span class="text-danger">Oh céus!!!</span><br>Página <?php echo $msg;?> não encontrada</h1>
+      <p>Infelizmente não encontramos essa página ou ela não existe mesmo (^_^)</p>
+      <a href="javascript:history.back()" class="btn btn-danger rounded-pill"><i data-feather="arrow-left"></i>Voltar</a>
+
+    </div>
+    <!-- /Main Content -->
+
+
+    <!-- Footer -->
+    <?php 
+    require_once("../templates/public/footer.php"); 
+    ?>
+    <!-- /Footer -->
+
+    <!-- REQUIRED JS  -->
+    <script src="./plugins/jquery/jquery.min.js"></script>
+    <script src="./plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="./plugins/feather-icons/feather.min.js"></script>
+    <script src="./plugins/metismenu/metisMenu.min.js"></script>
+    <script src="./plugins/perfect-scrollbar/perfect-scrollbar.min.js"></script>
+    <script src="./plugins/swiper/swiper.min.js"></script>
+    <script src="./dist/js/script.min.js"></script>
+
+   
+
+  </body>
+</html>

@@ -1,0 +1,140 @@
+
+    <?php
+
+    use Ajrc\Helper\Sessions;
+    use Ajrc\Helper\AlertBootstrap4 as Alert;
+    use Ajrc\Model\Usuario;
+    
+    $u = Usuario::List(Sessions::UserID());
+    
+    if(empty($u)){
+      echo "Usuário inexistente!";
+      exit();
+    }
+    
+    $check_excluir_foto = null;
+    $foto_usuario = null;
+    $pasta_imagens = "img/usuarios/";
+    foreach (glob($pasta_imagens . $u->id."_1.*") as $foto) {
+        $foto_usuario = "<img src='".$foto."'>";
+        $check_excluir_foto =  '<br><div class="checkbox checkbox-success checkbox-inline">
+                                    <input tabindex="18" name="excluir_foto" id="excluir_foto" value="'.$foto.'" type="checkbox">
+                                    <label for="excluir_foto">Excluir a foto atual?</label>
+                                </div>';
+    }
+
+    $sexo = null;
+    $sexos = [""=>"Selecione", "M"=>"Masculino", "F"=>"Feminino"];
+    foreach($sexos as $key=>$value){
+        $sel = ($u->sexo==$key)?" selected='selected'":null;
+        $sexo.= "<option value='".$key."'".$sel.">".$value."</option>";
+    }
+    
+
+    $required = " required ";
+    
+      
+    require_once("../templates/public/header.php");
+    require_once("../templates/public/topo.php");
+
+    ?>
+
+    <!-- Main Content -->
+    <div class="container my-3">
+      <div class="row">
+
+        <div class="col-md-4 col-lg-3">
+          <div class="card">
+            <div class="card-body text-center">
+              <img src="<?php echo Sessions::UserPhoto(); ?>" width="80" height="80" alt="Foto de Adair" class="rounded-circle mb-3">
+              <h5 class="bold mb-0"><?php echo Sessions::UserName(); ?></h5>
+              <small class="counter">Cliente desde <?php echo Sessions::UserSince(); ?></small>
+              <hr>
+              <div class="roboto-condensed bold" data-toggle="tooltip" title="You currently have 1,113 Points to spend.">
+                <i data-feather="award" class="text-warning"></i> Pontos: 1113</div>
+            </div>
+            <div class="list-group list-group-flush">
+              <a href="./account-profile" class="list-group-item list-group-item-action"><i data-feather="user" class="mr-3"></i> Seus Dados</a>
+              <a href="./account-orders" class="list-group-item list-group-item-action"><i data-feather="shopping-bag" class="mr-3"></i> Pedidos</a>
+              <a href="#account-wishlist" class="list-group-item has-badge list-group-item-action active"><i data-feather="heart" class="mr-3"></i> Lista de Desejos <span class="badge rounded badge-light">2</span></a>
+              <a href="./account-logout" class="list-group-item list-group-item-action text-danger"><i data-feather="log-out" class="mr-3"></i> Logout</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="col mt-3 mt-md-0">
+          <div class="card">
+            <div class="card-body">
+              <h3>Minha Lista de Desejos</h3><hr>
+              
+              <div class="card card-product card-product-list shadow-none border-bottom">
+                <a href="shop-single.html"><img class="card-img-top" src="../img/products/1_small.jpg" alt="Card image cap"></a>
+                <div class="card-body d-flex flex-column justify-content-center">
+                  <a href="shop-single.html" class="card-title">Hanes Hooded Sweatshirt</a>
+                  <div class="attr">
+                    <div class="price mr-3"><span class="h5">$18.56</span></div>
+                    <div><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check-circle text-success"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg> In Stock</div>
+                  </div>
+                  <p class="d-flex justify-content-between align-items-center">
+                    <button class="btn rounded-pill btn-outline-primary atc-demo" data-addclass-on-xs="btn-sm">Add to Cart</button>
+                    <button class="btn btn-link btn-icon d-inline-flex text-danger" data-addclass-on-xs="btn-sm" data-toggle="tooltip" title="" data-original-title="Remove item"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-x"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+                  </p>
+                </div>
+              </div>
+              
+              <div class="card card-product card-product-list shadow-none border-bottom">
+                <a href="shop-single.html"><img class="card-img-top" src="../img/products/8_small.jpg" alt="Card image cap"></a>
+                <div class="card-body d-flex flex-column justify-content-center">
+                  <a href="shop-single.html" class="card-title">Slim-Fit Short-Sleeve Printed Shirt</a>
+                  <div class="attr">
+                    <div class="price mr-3"><span class="h5">$25.00</span></div>
+                    <div><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-x-circle text-danger"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg> Out of Stock</div>
+                  </div>
+                  <p class="d-flex justify-content-between align-items-center">
+                    <button class="btn rounded-pill btn-outline-primary atc-demo" data-addclass-on-xs="btn-sm" disabled="">Add to Cart</button>
+                    <button class="btn btn-link btn-icon d-inline-flex text-danger" data-addclass-on-xs="btn-sm" data-toggle="tooltip" title="" data-original-title="Remove item"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-x"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+                  </p>
+                </div>
+              </div>
+              
+              <div class="custom-control custom-checkbox mt-3">
+                <input type="checkbox" class="custom-control-input" id="informCheck" checked="">
+                <label class="custom-control-label" for="informCheck">Inform me when item from my wishlist is available</label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <!-- /Main Content -->
+
+
+    <!-- Footer -->
+    <?php 
+    require_once("../templates/public/footer.php"); 
+    ?>
+    <!-- /Footer -->
+    
+
+
+    <!-- REQUIRED JS  -->
+    <script src="./plugins/jquery/jquery.min.js"></script>
+    <script src="./plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="./plugins/feather-icons/feather.min.js"></script>
+    <script src="./plugins/metismenu/metisMenu.min.js"></script>
+    <script src="./plugins/perfect-scrollbar/perfect-scrollbar.min.js"></script>
+
+    <!-- Mimity JS  -->
+    <script src="./dist/js/script.min.js"></script>
+
+    <script>
+    $(function () {
+
+      
+
+    })
+    </script>
+
+  </body>
+</html>

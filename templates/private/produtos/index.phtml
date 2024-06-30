@@ -1,0 +1,120 @@
+    <?php
+
+      //var_dump( $data );
+      $dominio = "produtos";
+      require_once("../templates/private/header.php");
+    ?>
+    
+    <div class="wrapper">
+
+    <?php
+      require_once("../templates/private/topo.php");
+    ?>
+
+      <div class="dashboard">
+
+    <?php
+      require_once("../templates/private/menus.php");
+    ?>      
+
+        <div class="main">
+
+          <div class="main__scroll scrollbar-macosx">
+            <div class="main__cont">
+              <?php
+                
+                if(array_key_exists("form", $data))
+                {
+
+                  if( $data["form"]=="insert" )
+                  {
+                    //EXIBE O FORMULÁRIO DE CADASTRO
+                    require_once("../templates/private/".$dominio."/form-cadastrar.php");
+                  } 
+                  else 
+                  {
+                    //EXIBE O FORMULÁRIO DE ALTERAÇÃO
+                    require_once("../templates/private/".$dominio."/form-editar.php");
+                  }
+
+                }
+
+                else //EXIBE A LISTAGEM
+                {
+
+              ?>
+                    
+                    <div class="col-sm-12 col-xs-12">
+                      <div class="panel panel-info">
+                        <div class="panel-heading">
+                          <h3 class="panel-title"><?php echo ucfirst($dominio); ?></h3>
+                        </div>
+                        <div class="panel-body">
+                        
+                          <div class="datalist__result">
+                            <ul class="nav nav-tabs" role="tablist">
+                              <li class='active' class="active" role="presentation"><a href="#<?php echo $dominio; ?>" aria-controls="<?php echo $dominio; ?>" role="tab" data-toggle="tab"><?php echo ucfirst($dominio); ?>&nbsp;</a></li>
+                              <li role="presentation"><a href="./<?php echo $dominio; ?>-insert"  role="tab" ><i class="fa fa-plus"></i>&nbsp;Cadastrar</a></li>
+                            </ul>
+                            <div class="tab-content">
+                            
+                              <?php 
+                              if(array_key_exists("message",$data)){
+                                echo $data["message"];
+                              } 
+                              ?>
+                              
+                              <div class="tab-pane active" id="categorias" role="tabpanel">
+                                <div class="scrollable scrollbar-macosx">
+                                  <div class="container-fluid">
+                                    <table id="tb_<?php echo $dominio; ?>" class="datalist__table table datatable display table-hover" width="100%" data-users="<?php echo $dominio; ?>">
+                                    </table>
+                                  </div>
+                                </div>
+                              </div>
+
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <?php
+
+                } //fim else
+
+            ?>
+          </div>
+        </div>
+
+
+      </div>
+    </div>
+
+    
+    
+    
+    <script src="/libs/jquery/jquery.min.js"></script>
+    <script src="/libs/bootstrap/js/bootstrap.min.js"></script>
+    <script src="/libs/jquery.scrollbar/jquery.scrollbar.min.js"></script>
+    <script src="/libs/bootstrap-validator/validator.min.js"></script>
+    <script src="/libs/bootstrap-tabdrop/bootstrap-tabdrop.min.js"></script>
+    <script src="/libs/jquery-sparkline/jquery.sparkline.min.js"></script>
+    <script src="/libs/jquery.mask/jquery.mask.min.js"></script>
+    <script src="/libs/ionrangeslider/js/ion.rangeSlider.min.js"></script>
+    <script src="/libs/inputNumber/js/inputNumber.js"></script>
+    <script src="/libs/bootstrap-switch/js/bootstrap-switch.min.js"></script>
+    <script src="/libs/datatables/js/jquery.dataTables.js"></script>
+    <script src="/libs/datatables/js/dataTables.select.js"></script>
+    <script src="/libs/datatables/js/dataTables.bootstrap.js"></script>
+    <script src="/libs/selectize/js/standalone/selectize.min.js"></script>
+    <script src="/libs/bootstrap-datepicker/js/bootstrap-datepicker.min.js"></script>
+    <script src="/libs/bootstrap-select/js/bootstrap-select.min.js"></script>
+    <script src="/js/template/<?php echo $dominio; ?>.js"></script>
+    <script src="/js/main.js"></script>
+
+  </body>
+</html>

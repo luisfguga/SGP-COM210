@@ -1,0 +1,106 @@
+<?php
+
+use Ajrc\Helper\Sessions;
+use Ajrc\Helper\AlertBootstrap4 as Alert;
+use Ajrc\Config\ConfigPagSeguro as PagSeguro;
+use Ajrc\Model\Usuario;
+use Ajrc\Model\Produto;
+use Ajrc\Model\Carrinho;
+
+$sessao_id = session_id();
+$passo = null;
+if(Sessions::UserID() != "") { 
+    $U = Usuario::List( Sessions::UserID() );
+} else { 
+    $passo =    '<li class="nav-item"><a class="nav-link disabled" href="javascript:void(0)"><i data-feather="arrow-right"></i></a></li>
+                 <li class="nav-item"><a class="nav-link" href="#">LOGIN</a></li>';
+}
+
+// SEO : SEARCH ENGINE OPTIMIZATE ----
+$title = "Chokoart :: Carrinho de Compras!";
+$description = $title;
+$url_redirect = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
+//----
+
+require_once("../templates/public/header.php");
+require_once("../templates/public/topo.php");
+
+$id_carrinho = null;
+if( array_key_exists("produto_id",$_POST) && 
+    array_key_exists("preco_unit_item",$_POST) &&
+    array_key_exists("preco_total_item",$_POST) && 
+    array_key_exists("valor_total_pedido",$_POST) && 
+    array_key_exists("qtde",$_POST) ) {
+
+    $id_carrinho = Carrinho::Insert( Produto::List( (integer) $_POST["produto_id"] ) );
+}
+
+?>
+
+    <!-- Main Content -->
+    <div class="container my-3">
+
+        <div class="card">
+            <div class="card-header bg-white border-bottom flex-center p-0">
+                <ul class="nav nav-pills card-header-pills main-nav-pills" role="tablist">
+                    <li class="nav-item"><a class="nav-link active" href="#">CARRINHO</a></li>
+                    <?php echo $passo; ?>
+                    <li class="nav-item"><a class="nav-link disabled" href="javascript:void(0)"><i data-feather="arrow-right"></i></a></li>
+                    <li class="nav-item"><a class="nav-link" href="#">ENTREGA</a></li>
+                    <li class="nav-item"><a class="nav-link disabled" href="javascript:void(0)"><i data-feather="arrow-right"></i></a></li>
+                    <li class="nav-item"><a class="nav-link" href="#">PAGAMENTO</a></li>
+                </ul>
+            </div>
+
+            <div class="card-body pt-1 flex-center flex-column">
+                
+                    <h2 class="roboto-condensed text-center">SEU CARRINHO</h2>
+                    <h6 class="text-muted mb-4 text-center">confira os itens abaixo</h6>
+                    <table class="table table-borderless table-cart" data-addclass-on-smdown="table-sm">
+                        <form id="cart_list" method="POST" class="form-style-1" method="POST" data-toggle="validator" data-disable="false" role="form">
+                        <input type="hidden" name="passo" value="1">
+                        <input type="hidden" name="id_carrinho" value="<?php echo $id_carrinho; ?>">
+                        <input type="hidden" id="valor_total_pedido" name="valor_total_pedido" value="0">
+                        <tbody id="tbody_cart_itens_list">
+
+                            <?php Carrinho::GetPublicList(); ?>
+
+                        </tbody>
+                    </table>
+                </form>   
+                
+                <div class="text-center">
+                    <small class="counter">TOTAL EM REAIS (BRL)</small>
+                    <h3 class="roboto-condensed bold" id="h3TotalPedido">R$ 0.00</h3>
+                    <hr>
+                    <a href="./" class="btn btn-default rounded-pill">Continuar Comprando</a>
+                    <a href="#" id="btnSubmit" class="btn btn-primary rounded-pill btn-lg">Entrega <i data-feather="arrow-right"></i></a>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+    <!-- /Main Content -->
+
+<!-- Footer -->
+<?php 
+require_once("../templates/public/footer.php"); 
+?>
+<!-- /Footer -->
+
+<script src="./plugins/jquery/jquery.min.js"></script>
+<script src="./plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="./plugins/feather-icons/feather.min.js"></script>
+<script src="./plugins/metismenu/metisMenu.min.js"></script>
+<script src="./plugins/perfect-scrollbar/perfect-scrollbar.min.js"></script>
+<script src="./dist/js/script.min.js"></script>
+<script src="./js/carrinho.js"></script>
+
+<?php
+    if(array_key_exists("produto_id",$_POST) && array_key_exists("titulo",$_POST) ) {
+        $qtde = (array_key_exists("qtde",$_POST)) ? (integer) trim($_POST["qtde"]) : 1;
+        echo "<script>ClientCart.Add('".$sessao_id."', ".$_POST["produto_id"].", '".trim($_POST["titulo"])."', ".$qtde.")</script>";
+    }
+?>
+

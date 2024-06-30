@@ -1,0 +1,196 @@
+    <?php
+
+      use Ajrc\Helper\Sessions;
+      use Ajrc\Helper\AlertBootstrap4 as Alert;
+      
+      // SEO : SEARCH ENGINE OPTIMIZATE ----
+      $title = "Chokoart :: Acesse sua Conta ou Registr-se!";
+      $description = $title;
+      $url_redirect = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
+      //----
+      
+      require_once("../templates/public/header.php");
+      require_once("../templates/public/topo.php");
+
+      $msg = null;
+      if(array_key_exists("msg",$_GET)) {
+        $msg = Alert::get("danger", base64_decode(trim($_GET["msg"])), 8000);
+      }
+
+    ?>
+
+    <!-- Main Content -->
+    <div class="container my-3 my-sm-5">
+
+      <!-- Login & Register Row -->
+      <div class="row justify-content-center" id="row-login">
+        <div class="col-sm-10 col-md-11 col-lg-9 col-xl-8">
+          <div class="card card-login">
+            <div class="card-body">
+              <div class="row">
+
+                <!-- Login Form -->
+                <div class="col-md-6 col-login">
+                  <form class="form-style-1" method="POST">
+                    <input type="hidden" name="pagina_atual" value="<?php echo @$_SERVER["REQUEST_URI"]; ?>'"> 
+                    <input type="hidden" name="pagina_origem" value="<?php echo @$_SERVER['HTTP_REFERER']; ?>'">
+                    <div class="form-group text-center mb-2">
+                      <h2 class="bold mb-0">Login</h2>
+                      <em>em sua conta</em>
+                      <?php 
+                      echo $msg; 
+                      ?>
+                    </div>
+                    <div class="form-group">
+                      <span class="input-icon">
+                        <i data-feather="mail"></i>
+                        <input type="email" name="email" class="form-control" placeholder="Digite seu E-MAIL" required>
+                      </span>
+                    </div>
+                    <div class="form-group">
+                      <span class="input-icon">
+                        <i data-feather="lock"></i>
+                        <input type="password" name="password" class="form-control" placeholder="Digite sua SENHA" required>
+                      </span>
+                    </div>
+                    <div class="form-group d-flex justify-content-between">
+                      <div class="custom-control custom-checkbox">
+                        <input type="checkbox" class="custom-control-input" id="loginRemember">
+                        <label class="custom-control-label" for="loginRemember">Permanecer logado</label>
+                      </div>
+                      <u><a href="#" class="text-primary small reset">Esqueceu sua senha?</a></u>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">LOGIN</button>
+                  </form>
+                </div>
+                <!-- /Login Form -->
+
+                <span class="or-divider">OU</span>
+
+                <!-- Register Form -->
+                <div class="col-md-6 col-register">
+                  <form class="form-style-2" method="POST" action="./account-register">
+                    <div class="form-group text-center">
+                      <h2 class="bold">Registro</h2>
+                    </div>
+                    <div class="form-group">
+                      <span class="input-icon">
+                        <i data-feather="mail"></i>
+                        <input type="email" name="email" id="email" class="form-control" placeholder="E-mail" required>
+                      </span>
+                    </div>
+                    <div class="form-group">
+                      <span class="input-icon">
+                        <i data-feather="lock"></i>
+                        <input type="password" name="password" id="password" class="form-control" placeholder="Senha" required>
+                      </span>
+                    </div>
+                    <div class="form-group">
+                      <span class="input-icon">
+                        <i data-feather="lock"></i>
+                        <input type="password" name="passwordc" id="passwordc" class="form-control" placeholder="Confirme a Senha" required>
+                      </span>
+                    </div>
+                    <button type="submit" id="btnRegistrarse" class="btn btn-outline-primary btn-block">REGISTRAR-SE</button>
+                  </form>
+                </div>
+                <!-- /Register Form -->
+
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- /Login & Register Row -->
+
+      <!-- Reset Password -->
+      <div class="row justify-content-center" id="row-reset" hidden>
+        <div class="col-sm-8 col-md-6 col-lg-5 col-xl-4">
+          <div class="card">
+            <div class="card-body">
+              <form class="form-style-1">
+                <div class="form-group text-center">
+                  <h2 class="bold">Esqueceu sua senha?</h2>
+                  <em>digite oe-mail registrado e receba mais intruções</em>
+                </div>
+                <div class="form-group">
+                  <span class="input-icon">
+                    <i data-feather="mail"></i>
+                    <input type="email" class="form-control" placeholder="Seu E-MAIL registrado">
+                  </span>
+                </div>
+                <button type="button" class="btn btn-danger btn-block reset-done">SOLICITAR NOVA SENHA</button>
+              </form>
+              <hr>
+              <button class="btn btn-light btn-sm login"><i data-feather="arrow-left"></i> Voltar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- /Reset Password -->
+
+
+    </div>
+    <!-- /Main Content -->
+
+    <!-- Footer -->
+    <?php 
+    require_once("../templates/public/footer.php"); 
+    ?>
+    <!-- /Footer -->
+
+    <!-- REQUIRED JS  -->
+    <script src="./plugins/jquery/jquery.min.js"></script>
+    <script src="./plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="./plugins/feather-icons/feather.min.js"></script>
+    <script src="./plugins/metismenu/metisMenu.min.js"></script>
+    <script src="./plugins/perfect-scrollbar/perfect-scrollbar.min.js"></script>
+    <script src="./plugins/swiper/swiper.min.js"></script>
+    <script src="./dist/js/script.min.js"></script>
+
+    <script>
+    $(function () {
+
+      // Validates if passwords are identical
+      $('button#btnRegistrarse').click(function(event) {
+          if($('#passwordc').val() != $('#password').val()){
+              event.preventDefault()
+              alert('Senhas diferentes');
+              return false;
+          }
+      })
+
+      // Show reset password form
+      $('.reset').click(function (event) {
+        $('#row-login').attr('hidden', true)
+        $('#row-reset').attr('hidden', false)
+        event.preventDefault()
+      })
+
+      // Show login form
+      $('.login').click(function (event) {
+        $('#row-login').attr('hidden', false)
+        $('#row-reset').attr('hidden', true)
+        $('#row-reset-done').attr('hidden', true)
+      })
+
+      // Show reset password done message (demo purpose only)
+      $('.reset-done').click(function (event) {
+        $('#row-reset-done').attr('hidden', false)
+        $('#row-reset').attr('hidden', true)
+      })
+
+      App.atwDemo() // Add to Wishlist Demo
+      App.homeSlider('#home-slider')
+      App.colorOption() //Change Product Colors
+      <?php
+        if(Sessions::UserID()!="") { 
+          echo "WishList.Persistence('./add-whislist');"; 
+        }
+      ?>
+
+    })
+    </script>
+
+  </body>
+</html>

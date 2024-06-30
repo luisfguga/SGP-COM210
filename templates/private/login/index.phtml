@@ -1,0 +1,41 @@
+    <?php
+      
+      require_once("../templates/private/header.php");
+
+      $msg = null;
+      if(array_key_exists("msg",$_GET)){
+        $msg = "<h2 style='text-align:center'>" . base64_decode(trim($_GET["msg"])) . "</h2>";
+      }
+
+    ?>
+  
+    <div class="wrapper">
+      <div class="login">
+        <form class="login__form" method="POST" action="./login">
+          <div class="login__logo"></div>
+          <?php echo $msg; ?>
+          <div class="form-group">
+            <input class="form-control" name="login" type="text" placeholder="Login" required>
+          </div>
+          <div class="form-group">
+            <input class="form-control" name="email" type="email" placeholder="E-mail" required>
+          </div>
+          <div class="form-group">
+            <input class="form-control" name="password" type="password" placeholder="Senha" required>
+          </div>
+          <div class="form-group login__action">
+            <div id="capslock" class="checkbox login__remember">
+            </div>
+            <div class="login__submit">
+              <button class="btn btn-default" type="reset">Limpar</button>
+              <button class="btn btn-success" type="submit">Entrar</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+    <script src="libs/jquery/jquery.min.js"></script>
+    <script src="libs/bootstrap/js/bootstrap.min.js"></script>
+    <script src="js/demo.js"></script>
+  </body>
+</html>

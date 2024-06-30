@@ -1,0 +1,94 @@
+    <?php
+
+      use Ajrc\Helper\Sessions;
+      use Ajrc\Helper\AlertBootstrap4 as Alert;
+      use Ajrc\Model\Categoria;
+      use Ajrc\Model\Destaque;
+      use Ajrc\Model\Produto;
+
+      // SEO : SEARCH ENGINE OPTIMIZATE ----
+      $title = "Chokoart :: seu paladar, nosso desejo!";
+      $description = "Trufas, bombons, barras, licores e muito mais do melhor do chocolate!";
+      $url_redirect = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
+      //----
+      
+      require_once("../templates/public/header.php");
+      require_once("../templates/public/topo.php");
+
+    ?>
+    <!-- Main Content -->
+
+    <!-- Home slider -->
+    <?php 
+      Destaque::GetPrincipal(); 
+    ?>
+    <!-- /Home slider -->
+
+    <div class="container mt-3">
+
+      <!-- Destaque Categorias -->
+      <div class="row categories-grid gutters-3 mt-gutter">
+        <?php Categoria::GetPublicList(); ?>
+      </div>
+      <!-- /Destaque Categorias -->
+
+      <h4 class="bold text-center mt-gutter">Nossos Produtos</h4>
+
+      <!-- Produtos -->
+      <div class="grid grid-gap-3 grid-col-md-4 my-3">
+
+        <?php Produto::GetPublicAll(); ?>
+      
+      </div>
+      <!-- /Produtos -->
+      
+      <div class="text-center mt-3 mb-3">
+        <a href="./todos-produtos" class="btn btn-light border rounded-pill bold text-muted">VEJA TODOS PRODUTOS</a>
+      </div>
+
+      <!-- Top Categories 1 -->
+      <?php
+        Destaque::GetSecondary();
+      ?>
+      <!-- /Top Categories 1 -->
+
+    </div>
+    <!-- /Main Content -->
+    
+
+    <!-- Footer -->
+    <?php 
+    require_once("../templates/public/footer.php"); 
+    ?>
+    <!-- /Footer -->
+
+    <!-- REQUIRED JS  -->
+    <script src="plugins/jquery/jquery.min.js"></script>
+    <script src="plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="plugins/feather-icons/feather.min.js"></script>
+    <script src="./plugins/metismenu/metisMenu.min.js"></script>
+    <script src="./plugins/perfect-scrollbar/perfect-scrollbar.min.js"></script>
+    <script src="./plugins/swiper/swiper.min.js"></script>
+    <script src="./plugins/noty/noty.min.js"></script>
+    <script src="./plugins/jquery-countdown/jquery.countdown.min.js"></script>
+    <script src="./dist/js/script.min.js"></script>
+    <script>
+ 
+    $(function () {
+
+      //App.atcDemo() // Add to Cart Demo
+      App.atwDemo() // Add to Wishlist Demo
+      App.homeSlider('#home-slider')
+      App.colorOption() //Change Product Colors
+      <?php
+        if(Sessions::UserID()!="") { 
+          echo "WishList.Persistence('./add-whislist');"; 
+        }
+      ?>
+      
+    })
+
+    </script>
+
+  </body>
+</html>

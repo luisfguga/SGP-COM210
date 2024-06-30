@@ -1,0 +1,323 @@
+<?php
+
+use Ajrc\Helper\Sessions;
+use Ajrc\Helper\AlertBootstrap4 as Alert;
+use Ajrc\Helper\Correios;
+use Ajrc\Config\ConfigPagSeguro as PagSeguro;
+use Ajrc\Model\Usuario;
+
+if(Sessions::UserID() != "") { 
+    $U = Usuario::List( Sessions::UserID() );
+} else { 
+    header("location: ./account-login");
+    exit();
+}
+
+$id_carrinho = trim($_POST["id_carrinho"]);
+$usuario_id = $U->id;
+$valor_total_pedido = trim($_POST["valor_total_pedido"]);
+$total_produtos = COUNT($_POST["produto_id"]);
+$peso_pedido = 0.00;
+$valor_total_pedido_sem_frete = $valor_total_pedido;
+for($i=0;$i<$total_produtos;$i++){
+    $peso_pedido+= $_POST["produto_peso_total"][$i];
+}
+/*
+["produto_peso_total"]=>
+  array(2) {
+    [0]=>
+    string(5) "0.027"
+    [1]=>
+    string(4) "0.75"
+  }
+["produto_id"]=>
+  array(2) {
+    [0]=>
+    string(1) "2"
+    [1]=>
+    string(1) "4"
+  }
+["produto_unidade_medida"]=>
+  array(2) {
+    [0]=>
+    string(1) "g"
+    [1]=>
+    string(1) "g"
+  }
+["produto_peso"]=>
+  array(2) {
+    [0]=>
+    string(5) "13.50"
+    [1]=>
+    string(6) "250.00"
+  }
+
+  ["qtde"]=>
+  array(2) {
+    [0]=>
+    string(1) "2"
+    [1]=>
+    string(1) "3"
+  }
+  ["qtde_estoque"]=>
+  array(2) {
+    [0]=>
+    string(3) "197"
+    [1]=>
+    string(2) "10"
+  }
+  ["preco_unit_item"]=>
+  array(2) {
+    [0]=>
+    string(5) "10.00"
+    [1]=>
+    string(5) "35.00"
+  }
+  ["preco_total_item"]=>
+  array(2) {
+    [0]=>
+    string(2) "20"
+    [1]=>
+    string(3) "105"
+  }
+*/
+$estados = "";
+$uf = ["AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO"];
+foreach($uf as $estado){
+    $sel = (strtoupper($U->estado)==$estado)?" selected":null;
+    $estados.= "<option value='".$estado."'".$sel.">".$estado."</option>";
+}
+
+// SEO : SEARCH ENGINE OPTIMIZATE ----
+$title = "Chokoart :: Entrega! ";
+$description = "Ou entregamos, ou você retira! ;-)";
+$url_redirect = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
+//----
+
+require_once("../templates/public/header.php");
+require_once("../templates/public/topo.php");
+
+?>
+
+
+    <!-- Main Content -->
+    <div class="container my-3">
+
+        <div class="card">
+            <div class="card-header bg-white border-bottom flex-center p-0">
+                <ul class="nav nav-pills card-header-pills main-nav-pills" role="tablist">
+                    <li class="nav-item"><a class="nav-link" href="./cart">CARRINHO</a></li>
+                    <li class="nav-item"><a class="nav-link disabled" href="javascript:void(0)"><i data-feather="arrow-right"></i></a></li>
+                    <li class="nav-item"><a class="nav-link active" href="#">ENTREGA</a></li>
+                    <li class="nav-item"><a class="nav-link disabled" href="javascript:void(0)"><i data-feather="arrow-right"></i></a></li>
+                    <li class="nav-item"><a class="nav-link" href="#">PAGAMENTO</a></li>
+                </ul>
+            </div>
+
+            <div class="card-body pt-1 flex-center flex-column">
+
+                <form id="form_frete" class="form-style-1" method="POST" data-toggle="validator" data-disable="false" role="form">
+                    <input type="hidden" name="passo" value="2">
+                    <input type="hidden" name="id_carrinho" value="<?php echo $id_carrinho; ?>">
+                    <input type="hidden" name="idsessao" value="<?php echo session_id(); ?>">
+                    <input type="hidden" name="valor_total_pedido" id="valor_total_pedido" value="0.00">
+                    <input type="hidden" name="valor_total_pedido_sem_frete" id="valor_total_pedido_sem_frete" value="<?php echo $valor_total_pedido_sem_frete; ?>">
+                    <h2 class="roboto-condensed text-center">Dados para Entrega</h2>
+                    <h6 class="text-muted mb-4 text-center">Insira seus dados para entrega!</h6>
+                    <hr>
+                    <div class="form-row">
+                        <div class="form-group col-12 col-sm-5">
+                            <label for="shippingFirstName">Nome</label>
+                            <input type="text" name="nome" id="nome" class="form-control" id="shippingFirstName" value="<?php echo $U->nome; ?>" required>
+                        </div>
+                        <div class="form-group col-12 col-sm-5">
+                            <label for="shippingEmail">E-mail</label>
+                            <input type="email" name="email" id="email" class="form-control" id="shippingEmail" value="<?php echo $U->email; ?>" required>
+                        </div>
+                        <div class="form-group col-12 col-sm-2 col-md-2 ">
+                            <label for="cep">CEP</label>
+                            <input type="text" class="form-control" name="cep" id="cep" maxlength="10" value="<?php echo $U->cep; ?>" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        
+                        <div class="form-group col-12  col-sm-2">
+                            <label for="estado">Estado</label>
+                            <select class="form-control custom-select" name="estado" id="estado" required>
+                                <option value="">Escolha</option>
+                                <?php echo $estados; ?>
+                            </select>
+                        </div>
+                        <div class="form-group col-12 col-sm-6">
+                            <label for="cidade">Cidade</label>
+                            <input type="text" class="form-control" id="cidade" name="cidade" value="<?php echo $U->cidade; ?>">
+                        </div>
+                    
+                        <div class="form-group col-12 col-sm-4">
+                            <label for="bairro">Bairro</label>
+                            <input type="text" class="form-control" id="bairro" name="bairro" value="<?php echo $U->bairro; ?>">
+                        </div>
+                        
+                        <div class="form-group col-12 col-sm-6">
+                            <label for="endereco">Endereço</label>
+                            <input type="text" class="form-control" id="endereco" name="endereco" value="<?php echo $U->endereco; ?>">
+                        </div>
+                        <div class="form-group col-12 col-sm-2">
+                            <label for="numero">Nº</label>
+                            <input type="text" class="form-control" id="numero" name="numero" value="<?php echo $U->numero; ?>">
+                        </div>
+                        <div class="form-group col-12 col-sm-4">
+                            <label for="complemento">Complemento</label>
+                            <input type="text" class="form-control" id="complemento" name="complemento" value="<?php echo $U->complemento; ?>">
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-center align-items-center bd-highlight m-0" style="padding:0">
+                        <div class="p-0 mx-4">
+                            <small class="counter">VALOR DO PEDIDO</small>
+                            <h3 class="roboto-condensed bold" id="h3ValorPedido">R$ 0.00</h3>
+                        </div>
+                        <div class="p-0 mx-4">
+                            <small class="counter">VALOR DO FRETE</small>
+                            <h3 class="roboto-condensed bold" id="h3ValorFrete">R$ 0.00</h3>
+                        </div>
+                        <div class="p-0 mx-4">
+                            <small class="counter">VALOR TOTAL DO PEDIDO</small>
+                            <h1 class="price roboto-condensed bold" id="h3TotalPedido">R$ 0.00</h1>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="form-group text-center mt-3 shipping-group">
+                        <h4 class="roboto-condensed text-center">Retirada / Frete Correios</h4>
+                        <div class="p-3" id="valorFreteRadios">
+                            <small class="counter">buscando informações sobre o frete nos correios ... isso pode demorar alguns segundos!</small>
+                        </div>
+                        <img id="preloadingGif" src="img/preloading.gif" style="margin-top:-20px;max-width:80px">
+                        <img id="preloadingGifProblem" src="img/preloading-problem.gif" style="margin-top:-20px;max-width:100px;display:none">
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-center align-items-center bd-highlight mb-3 ">
+                        <div class="p-2">
+                            <a href="./cart" class="btn btn-default rounded-pill"><i data-feather="arrow-left"></i> Carrinho</a>
+                            <a href="javascript:void(0);" id="btnSubmit" class="btn btn-primary rounded-pill btn-lg">Pagamento <i data-feather="arrow-right"></i></a>
+                        </div>
+                    </div>
+                </form>
+
+            </div>
+
+            
+            
+        </div>
+
+    </div>
+    <!-- /Main Content -->
+
+<!-- Footer -->
+<?php 
+require_once("../templates/public/footer.php"); 
+?>
+<!-- /Footer -->
+
+<script src="./plugins/jquery/jquery.min.js"></script>
+<script src="./plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="./plugins/feather-icons/feather.min.js"></script>
+<script src="./plugins/metismenu/metisMenu.min.js"></script>
+<script src="./plugins/perfect-scrollbar/perfect-scrollbar.min.js"></script>
+<script src="./plugins/noty/noty.min.js"></script>
+<script src="./dist/js/script.min.js"></script>
+<script>
+    $(function () {
+
+        var valor_pedido = <?php echo $valor_total_pedido; ?>;
+        var valor_frete = 0.00;
+        var valor_total_pedido = <?php echo $valor_total_pedido; ?>;
+        var peso_pedido = <?php echo $peso_pedido; ?>
+
+        $("h3#h3ValorPedido").html("R$ "+valor_pedido.toFixed(2).replace(".",","))
+        $("h3#h3ValorFrete").html("R$ "+valor_frete.toFixed(2).replace(".",","))
+        $("#h3TotalPedido").html("R$ "+valor_total_pedido.toFixed(2).replace(".",","))
+
+        if($("input#cep").val()!="") {
+            $.ajax({
+                type: "POST", url: './getFrete', data: { cep: '<?php echo $U->cep; ?>', dados : {"nrqtd":1, "vllength":16, "vlwidth":11, "vlheight":5, "vlweight":<?php echo ROUND($peso_pedido,2); ?>, "vlprice":<?php echo $valor_total_pedido; ?>}   },
+                success: function(rs, textoStatus, xhr)
+                { 
+                    var respFrete = JSON.parse(rs);
+                    $("img#preloadingGif").toggle();
+                    var kra1 = `
+                                <div class="custom-control custom-radio custom-control-inline">
+                                    <input type="radio" id="nCdServico0" name="nCdServico" class="custom-control-input" value="0.00">
+                                    <label class="custom-control-label text-left" for="nCdServico0">
+                                    RETIRAR NA LOJA <span class="counter">( Grátis! )</span>
+                                    <small class="counter d-block">Já Disponível!</small>
+                                    </label>
+                                </div>
+                                <div class="custom-control custom-radio custom-control-inline">
+                                    <input type="radio" id="nCdServico" name="nCdServico" class="custom-control-input" value="${respFrete.SEDEX_VALOR}">
+                                    <label class="custom-control-label text-left" for="nCdServico">
+                                    SEDEX <span class="counter">( + R\$ ${respFrete.SEDEX_VALOR} )</span>
+                                    <small class="counter d-block">${respFrete.SEDEX_DIAS} Dias</small>
+                                    </label>
+                                </div>
+                                <div class="custom-control custom-radio custom-control-inline">
+                                    <input type="radio" id="nCdServico2" name="nCdServico" class="custom-control-input" value="${respFrete.PAC_VALOR}">
+                                    <label class="custom-control-label text-left" for="nCdServico2">
+                                    PAC <span class="counter">( + R\$ ${respFrete.PAC_VALOR} )</span>
+                                    <small class="counter d-block">${respFrete.PAC_DIAS} Dias</small>
+                                    </label>
+                                </div>`;
+                    $("div#valorFreteRadios").html(kra1)
+
+                    $("input#nCdServico0").change(function(){
+                        var valorFrete = parseFloat( $("input#nCdServico0").val() )
+                        var total = parseFloat(valor_total_pedido) + parseFloat(valorFrete)
+                        $("h3#h3ValorFrete").html("R$ "+valorFrete.toFixed(2).replace(".",","))
+                        $("#h3TotalPedido").html( "R$ "+total.toFixed(2).replace(".",",") )
+                        $("input#valor_total_pedido").val( total.toFixed(2) )
+                    });
+
+                    $("input#nCdServico").change(function(){
+                        var valorFrete = parseFloat( $("input#nCdServico").val() )
+                        var total = parseFloat(valor_total_pedido) + parseFloat(valorFrete)
+                        $("h3#h3ValorFrete").html("R$ "+valorFrete.toFixed(2).replace(".",","))
+                        $("#h3TotalPedido").html( "R$ "+total.toFixed(2).replace(".",",") )
+                        $("input#valor_total_pedido").val( total.toFixed(2) )
+                    });
+
+                    $("input#nCdServico2").change(function(){
+                        var valorFrete = parseFloat( $("input#nCdServico2").val() )
+                        var total = parseFloat(valor_total_pedido) + parseFloat(valorFrete)
+                        $("h3#h3ValorFrete").html("R$ "+valorFrete.toFixed(2).replace(".",","))
+                        $("#h3TotalPedido").html( "R$ "+total.toFixed(2).replace(".",",") )
+                        $("input#valor_total_pedido").val( total.toFixed(2) )
+                    });
+                },
+                error: function(rs, status, err) { 
+                    $("img#preloadingGif").toggle();
+                    $("img#preloadingGifProblem").toggle();
+                    //$("img#preloadingGif").toggle();
+                    console.log('Erro --> ', rs , status, err) 
+                    $("div#valorFreteRadios").html('Oh céus!!!<br><small class="counter">Estamos com problemas no site dos Correios.<br>Por favor, tente novamente mais tarde!</small>')
+                }
+            });
+
+            
+        }
+
+        $("a#btnSubmit").click(function(){
+            if($("input#nCdServico0").prop("checked") || $("input#nCdServico").prop("checked") || $("input#nCdServico2").prop("checked")){
+                $("form#form_frete").submit();
+            }
+            else
+            {
+                new Noty({
+                    type: 'pink',
+                    text: '<div class="media"><i data-feather="heart"></i><div class="media-body ml-3"><strong>ATENÇÃO!</strong><br/>Selecione um modalidade de FRETE</div></div>',
+                    timeout: 3e3
+                }).show()
+
+            }
+        })
+});
+</script>

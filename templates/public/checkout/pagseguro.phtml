@@ -1,0 +1,447 @@
+<?php
+
+use Ajrc\Helper\Sessions;
+use Ajrc\Helper\AlertBootstrap4 as Alert;
+use Ajrc\Model\Destaque;
+use Ajrc\Model\Produto;
+use Ajrc\Config\ConfigPagSeguro as PagSeguro;
+
+
+$id_carrinho = trim($_POST['id_carrinho']);
+$idsessao = trim($_POST['idsessao']);
+$valor_total_pedido = trim($_POST['valor_total_pedido']);
+$valor_total_pedido_sem_frete = trim($_POST['valor_total_pedido_sem_frete']);
+$nome = trim($_POST['nome']);
+$email = trim($_POST['email']);
+$cep = trim($_POST['cep']);
+$estado = trim($_POST['estado']);
+$cidade = trim($_POST['cidade']);
+$bairro = trim($_POST['bairro']);
+$endereco = trim($_POST['endereco']);
+$numero = trim($_POST['numero']);
+$complemento = trim($_POST['complemento']);
+
+$tipo_frete = 3;
+$nCdServico = 0.00; //CLIENTE RETIRARÁ NA LOJA
+if(array_key_exists('nCdServico',$_POST)){ //SEDEX
+    $nCdServico = trim($_POST['nCdServico']);
+    $tipo_frete = 2;
+}
+
+if(array_key_exists('nCdServico2',$_POST)){ //PAC
+    $nCdServico = trim($_POST['nCdServico2']);
+    $tipo_frete = 1;
+}
+
+
+// SEO : SEARCH ENGINE OPTIMIZATE ----
+$title = "Chokoart :: Pagemento!";
+$description = $title." - PagSeguro!";
+$url_redirect = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
+//----
+
+require_once("../templates/public/header.php");
+require_once("../templates/public/topo.php");
+
+?>
+
+    <!-- Main Content -->
+    <div class="container my-3">
+
+        <div class="card">
+            <div class="card-header bg-white border-bottom flex-center p-0">
+                <ul class="nav nav-pills card-header-pills main-nav-pills" role="tablist">
+                    <li class="nav-item"><a class="nav-link" href="#">CARRINHO</a></li>
+                    <li class="nav-item"><a class="nav-link disabled" href="javascript:void(0)"><i data-feather="arrow-right"></i></a></li>
+                    <li class="nav-item"><a class="nav-link" href="#">ENTREGA</a></li>
+                    <li class="nav-item"><a class="nav-link disabled" href="javascript:void(0)"><i data-feather="arrow-right"></i></a></li>
+                    <li class="nav-item"><a class="nav-link active" href="#">PAGAMENTO</a></li>
+                </ul>
+            </div>
+            
+            <div id="divFormasPagto" class="card-body pt-5 flex-center flex-column">
+                <h2 class="roboto-condensed text-center">BOLETO</h2>
+                <h6 class="text-muted mb-4 text-center">Selecione a forma de pagamento!</h6>
+                <div id="containerBoleto"></div>
+                
+            </div>
+            
+            <div class="card-body pt-5 flex-center flex-column">
+
+                <form class="form-style-1" id="form-payment">
+                    <h2 class="roboto-condensed text-center">Pagamento com Cartão de Crédito</h2>
+                    <h6 class="text-muted mb-4 text-center">tenha em mãos o seu Cartão de Crédito!</h6>
+                    <div class='card-wrapper mb-3'></div>
+                    <div class="form-group">
+                    <input type="text" id="txtCardNumber" name="number" class="form-control" placeholder="Número do Cartão" value="4111111111111111" required>
+                    </div>
+                    <div class="form-group">
+                    <input type="text" id="txtCardName" name="name" class="form-control" placeholder="Nome escrito no Cartão" value="skdjfaslfdk" required>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-sm-6">
+                            <input type="text" id="txtCardExpiry" name="expiry" class="form-control" placeholder="Válido até" value="12/2030" required>
+                        </div>
+                        <div class="form-group col-sm-6">
+                            <input type="text" id="txtCardCvv" name="cvc" class="form-control" placeholder="Código CVV" value="123" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-sm-12">
+                            <select class="form-control custom-select" id="numParcelas" name="numParcelas" style="display:none" required>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        <small class="counter">SUBTOTAL</small>
+                        <h3 class="roboto-condensed bold">R$ <?php echo number_format($valor_total_pedido,2,',','.'); ?></h3>
+                        <button id="btnFinalizarPedido" type="submit" class="btn btn-primary rounded-pill btn-lg">FINALIZAR PEDIDO</button>
+                    </div>
+                </form>
+            </div>
+
+            <div id="resultado"></div>
+
+
+        </div>
+
+    </div>
+    <!-- /Main Content -->
+
+<!-- Footer -->
+<?php 
+require_once("../templates/public/footer.php"); 
+?>
+<!-- /Footer -->
+
+<script src="./plugins/jquery/jquery.min.js"></script>
+<script src="./plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="./plugins/feather-icons/feather.min.js"></script>
+<script src="./plugins/metismenu/metisMenu.min.js"></script>
+<script src="./plugins/perfect-scrollbar/perfect-scrollbar.min.js"></script>
+<script src="./plugins/card/jquery.card.min.js"></script>
+<script src="./dist/js/script.min.js"></script>
+
+<script>
+    const AjrcPagSeguro = {
+        valorTotalPedido: <?php echo $valor_total_pedido; ?>,
+        metodos : [],
+        disponivel : [],
+        cardNumber: -1,
+        maxInstallmentNoInterest: 2,
+        onSenderHash : '',
+        cardToken: '',
+        tokenCartao: '',
+        bandeira: '',
+        securityFieldLength: -1,
+        hasCvv: false,
+        cvvSize: -1,
+        cardCvv: '',
+        expirationMonth: 00,
+        expirationYear: 0000,
+        validationAlgorithm: '',
+        creditCardToken: ''
+    };
+</script>
+<script src="<?php echo PagSeguro::getUrlJS(); ?>"></script>
+<script>
+
+    $(function () {
+
+        $('#form-payment').card({container: '.card-wrapper'})
+
+        PagSeguroDirectPayment.setSessionId('<?php  PagSeguro::getSessions(); ?>');
+
+        PagSeguroDirectPayment.getPaymentMethods({
+            amount: AjrcPagSeguro.valorTotalPedido,
+            success: function(response) {
+
+                if(response.paymentMethods.BOLETO){
+                    AjrcPagSeguro.disponivel.push("BOLETO")
+                    AjrcPagSeguro.metodos.push(response.paymentMethods.BOLETO.options)
+                }
+
+                if(response.paymentMethods.CREDIT_CARD){
+                    AjrcPagSeguro.disponivel.push("CREDIT_CARD")
+                    AjrcPagSeguro.metodos.push(response.paymentMethods.CREDIT_CARD.options)
+
+                    if(AjrcPagSeguro.metodos[1].AMEX.status=="AVAILABLE") {
+                        //loadImages(AjrcPagSeguro.metodos[1].AMEX.images.MEDIUM.path);
+                    }
+
+                    if(AjrcPagSeguro.metodos[1].AURA.status=="AVAILABLE") {
+                        //loadImages(AjrcPagSeguro.metodos[1].AURA.images.MEDIUM.path);
+                    }
+
+                    if(AjrcPagSeguro.metodos[1].DINERS.status=="AVAILABLE") {
+                        //loadImages(AjrcPagSeguro.metodos[1].DINERS.images.MEDIUM.path);
+                    }
+
+                    if(AjrcPagSeguro.metodos[1].MASTERCARD.status=="AVAILABLE") {
+                        //loadImages(AjrcPagSeguro.metodos[1].MASTERCARD.images.MEDIUM.path);
+                    }
+                    
+                    if(AjrcPagSeguro.metodos[1].VALECARD.status=="AVAILABLE") {
+                        //loadImages(AjrcPagSeguro.metodos[1].VALECARD.images.MEDIUM.path);
+                    }
+                    
+                    if(AjrcPagSeguro.metodos[1].VISA.status=="AVAILABLE") {
+                        //loadImages(AjrcPagSeguro.metodos[1].VISA.images.MEDIUM.path);
+                    }
+                    
+                }
+                
+                if(response.paymentMethods.ONLINE_DEBIT){
+                    AjrcPagSeguro.disponivel.push("ONLINE_DEBIT")
+                    AjrcPagSeguro.metodos.push(response.paymentMethods.ONLINE_DEBIT.options)
+                }
+                
+            },
+            error: function(response) {
+                console.log(response, "PagSeguroDirectPayment.getPaymentMethods")
+            }
+        });
+
+        PagSeguroDirectPayment.onSenderHashReady(function(response){
+            if(response.status == 'error') {
+                console.log(response.message, "PagSeguroDirectPayment.onSenderHashReady");
+                return false;
+            }
+            AjrcPagSeguro.onSenderHash = response.senderHash
+            sendDataBoleto() //já invoca a modalidade boleto
+        });
+
+        $("input#txtCardNumber").blur(function(){
+
+            AjrcPagSeguro.cardNumber = $("input#txtCardNumber").val().replace(" ","").replace(" ","").replace(" ","").replace(" ","")
+                
+                PagSeguroDirectPayment.getBrand({
+                    cardBin: AjrcPagSeguro.cardNumber,
+                    success: function(response) {
+                        //bandeira encontrada
+                        AjrcPagSeguro.bandeira = response.brand.name
+                        AjrcPagSeguro.hasCvv = response.brand.config.hasCvv
+                        AjrcPagSeguro.cvvSize = response.brand.cvvSize
+                        AjrcPagSeguro.validationAlgorithm = response.brand.validationAlgorithm
+
+                        PagSeguroDirectPayment.getInstallments({
+                            amount:  AjrcPagSeguro.valorTotalPedido,
+                            maxInstallmentNoInterest: AjrcPagSeguro.maxInstallmentNoInterest,
+                            brand: AjrcPagSeguro.bandeira, //'visa','mastercard',etc
+                            success: function(response){
+
+                                if(!response.error) 
+                                {
+                                    $('select#numParcelas').toggle()
+                                    if(response.installments.visa)
+                                    {
+                                        console.log( response.installments.visa.length )
+                                        for(var i=0;i<response.installments.visa.length;i++){
+                                            var obj = response.installments.visa[i]
+                                            var value = obj.quantity +'-'+parseFloat(obj.installmentAmount).toFixed(2)
+                                            var text = obj.quantity+' x R$ '+parseFloat(obj.installmentAmount).toFixed(2).replace('.',',')+' (total: R$ '+parseFloat(obj.totalAmount).toFixed(2).replace('.',',')+')'
+                                            $('select#numParcelas').append($("<option></option>").attr("value",value).text(text))
+                                        }
+                                    }
+                                    elseif(response.installments.mastercard)
+                                    {
+                                        console.log( response.installments.mastercard.length )
+                                        for(var i=0;i<response.installments.mastercard.length;i++){
+                                            var obj = response.installments.mastercard[i]
+                                            var value = obj.quantity +'-'+parseFloat(obj.installmentAmount).toFixed(2)
+                                            var text = obj.quantity+' x R$ '+parseFloat(obj.installmentAmount).toFixed(2).replace('.',',')+' (total: R$ '+parseFloat(obj.totalAmount).toFixed(2).replace('.',',')+')'
+                                            $('select#numParcelas').html($("<option></option>").attr("value",value).text(text))
+                                        }
+                                    }
+                                    
+                                }
+                                // Retorna as opções de parcelamento disponíveis
+                                
+                            },
+                            error: function(response) {
+                                // callback para chamadas que falharam.
+                                console.log("Erro: ",response)
+                            }
+                        });
+
+                    },
+                    error: function(response) {
+                        //tratamento do erro
+                        console.log("Erro: ",response)
+                    }
+                });
+        })
+
+        $("input#txtCardCvv").blur(function(){
+            if($("input#txtCardCvv").val().length==AjrcPagSeguro.cvvSize){
+                AjrcPagSeguro.cardCvv = $("input#txtCardCvv").val();
+            }
+            
+        })
+
+        $("button#btnFinalizarPedido").click(function(event){
+            
+            event.preventDefault();
+
+            var dataExp = $("input#txtCardExpiry").val().trim().split("/")
+            AjrcPagSeguro.expirationMonth = dataExp[0].trim();
+            AjrcPagSeguro.expirationYear = dataExp[1].trim();
+            console.log(AjrcPagSeguro.cardNumber,AjrcPagSeguro.bandeira,AjrcPagSeguro.cardCvv,AjrcPagSeguro.expirationMonth,AjrcPagSeguro.expirationYear)
+           
+            PagSeguroDirectPayment.createCardToken({
+                cardNumber: AjrcPagSeguro.cardNumber, // Número do cartão de crédito
+                brand: AjrcPagSeguro.bandeira, // Bandeira do cartão
+                cvv: AjrcPagSeguro.cardCvv, // CVV do cartão
+                expirationMonth: AjrcPagSeguro.expirationMonth, // Mês da expiração do cartão
+                expirationYear: AjrcPagSeguro.expirationYear, // Ano da expiração do cartão, é necessário os 4 dígitos.
+                success: function (retorno) {
+                    AjrcPagSeguro.creditCardToken = retorno.card.token;
+                    sendDataCreditCard();
+                },
+                error: function (retorno) {
+                    // Callback para chamadas que falharam.
+                    console.log('Erro --> ',retorno)
+                }
+            });
+            
+        })
+
+
+    });
+    
+    function sendDataCreditCard(){
+        
+        
+        var id_sessao = '<?php echo $idsessao; ?>';
+        var valor_total_pedido = <?php echo $valor_total_pedido; ?>;
+        var valor_total_pedido_sem_frete = <?php echo $valor_total_pedido_sem_frete; ?>;
+        var nome = '<?php echo $nome; ?>';
+        var email = '<?php echo $email; ?>';
+        var cep = '<?php echo $cep; ?>';
+        var estado = '<?php echo $estado; ?>';
+        var cidade = '<?php echo $cidade; ?>';
+        var bairro = '<?php echo $bairro; ?>';
+        var endereco = '<?php echo $endereco; ?>';
+        var numero = '<?php echo $numero; ?>';
+        var complemento = '<?php echo $complemento; ?>';
+        var qtdeValor = $("select#numParcelas").val().split("-");
+        var maxInstallmentNoInterest = AjrcPagSeguro.maxInstallmentNoInterest;
+        var installmentQuantity = parseInt(qtdeValor[0].trim());
+        var installmentValue = parseFloat(qtdeValor[1].trim()).toFixed(2);
+        if(installmentQuantity>2){ valor_total_pedido = parseFloat(installmentQuantity*installmentValue).toFixed(2) }
+        var tipo_frete =  <?php echo $tipo_frete; ?>;
+        var valor_frete = <?php echo $nCdServico; ?>;
+
+        var senderHash = AjrcPagSeguro.onSenderHash;
+        var creditCardToken = AjrcPagSeguro.creditCardToken;
+        
+        var noInterestInstallmentQuantity = AjrcPagSeguro.maxInstallmentNoInterest;
+
+        console.log("foi --> creditCardToken:",
+        AjrcPagSeguro.creditCardToken,
+        "\nonSenderHash: ",AjrcPagSeguro.onSenderHash,
+        "\nmaxInstallmentNoInterest: ",AjrcPagSeguro.maxInstallmentNoInterest,
+        "\ninstallmentQuantity: ",installmentQuantity,
+        "\ninstallmentValue: ",installmentValue,
+        "\nvalor total do pedido: ",valor_total_pedido);
+
+        $.ajax({
+            type: "POST", url: './cart', data: 
+            { 
+                  passo : 3
+                , id_sessao : id_sessao
+                , valor_total_pedido : valor_total_pedido
+                , valor_total_pedido_sem_frete : valor_total_pedido_sem_frete
+                , tipo_frete : tipo_frete
+                , valor_frete : valor_frete
+                , nome : nome
+                , email : email
+                , cep : cep
+                , estado : estado
+                , cidade : cidade
+                , bairro : bairro
+                , endereco : endereco
+                , numero : numero
+                , complemento : complemento
+                , maxInstallmentNoInterest : AjrcPagSeguro.maxInstallmentNoInterest
+                , senderHash : AjrcPagSeguro.onSenderHash
+                , creditCardToken : AjrcPagSeguro.creditCardToken
+                , installmentQuantity : installmentQuantity
+                , installmentValue : installmentValue
+                , noInterestInstallmentQuantity : AjrcPagSeguro.maxInstallmentNoInterest
+            },
+            success: function(rs, textoStatus, xhr){ 
+                $("div#resultado").html(rs)
+                console.log('Sucesso --> ', rs, textoStatus) 
+                },
+            error: function(rs, status, err){ 
+                $("div#resultado").html(rs); 
+                console.log('Erro --> ',rs , err) 
+            }
+        });
+
+        
+    }
+
+    function sendDataBoleto(){
+        
+        
+        var id_sessao = '<?php echo $idsessao; ?>';
+        var valor_total_pedido = <?php echo $valor_total_pedido; ?>;
+        var valor_total_pedido_sem_frete = <?php echo $valor_total_pedido_sem_frete; ?>;
+        var nome = '<?php echo $nome; ?>';
+        var email = '<?php echo $email; ?>';
+        var cep = '<?php echo $cep; ?>';
+        var estado = '<?php echo $estado; ?>';
+        var cidade = '<?php echo $cidade; ?>';
+        var bairro = '<?php echo $bairro; ?>';
+        var endereco = '<?php echo $endereco; ?>';
+        var numero = '<?php echo $numero; ?>';
+        var complemento = '<?php echo $complemento; ?>';
+        var tipo_frete =  <?php echo $tipo_frete; ?>;
+        var valor_frete = <?php echo $nCdServico; ?>;
+
+        var senderHash = AjrcPagSeguro.onSenderHash;
+
+        console.log("onSenderHash: ",AjrcPagSeguro.onSenderHash,"\nvalor total do pedido: ",valor_total_pedido);
+
+        $.ajax({
+            type: "POST", url: './cart', data: 
+            { 
+                  passo : 4
+                , id_sessao : id_sessao
+                , valor_total_pedido : valor_total_pedido
+                , valor_total_pedido_sem_frete : valor_total_pedido_sem_frete
+                , tipo_frete : tipo_frete
+                , valor_frete : valor_frete
+                , nome : nome
+                , email : email
+                , cep : cep
+                , estado : estado
+                , cidade : cidade
+                , bairro : bairro
+                , endereco : endereco
+                , numero : numero
+                , complemento : complemento
+                , senderHash : AjrcPagSeguro.onSenderHash
+            },
+            success: function(rs, textoStatus, xhr){ 
+                $("div#containerBoleto").html(rs)
+                    console.log('Sucesso Boleto --> ', rs, textoStatus) 
+            },
+            error: function(rs, status, err){ 
+                $("div#containerBoleto").html(rs)
+                console.log('Erro Boleto --> ',rs , err) 
+            }
+        });
+
+        
+    }
+    
+    /*
+    //UTILIZADO SOMENTE COM CARTÃO DE CRÉDITO: DETECTA QTDE DE PAGTOS
+
+    
+    
+    //*/
+</script>
